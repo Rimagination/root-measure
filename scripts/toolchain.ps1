@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = '',
   [switch]$IncludeHelp
 )
@@ -39,3 +39,4 @@ if ($IncludeHelp.IsPresent) {
   }
   help = $help
 } | ConvertTo-Json -Depth 8
+

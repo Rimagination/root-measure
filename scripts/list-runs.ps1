@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = '',
   [int]$Limit = 20
 )
@@ -96,3 +96,4 @@ $runs = @(Get-ChildItem -LiteralPath $runsRoot -Directory | ForEach-Object {
   count = $runs.Count
   runs = @($runs)
 } | ConvertTo-Json -Depth 7
+

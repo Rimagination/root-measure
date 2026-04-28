@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = ''
 )
 
@@ -29,3 +29,4 @@ if ($matches.Count -gt 0) {
 }
 
 throw "Could not locate Root Measure project under: $workspaceRoot"
+

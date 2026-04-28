@@ -1,13 +1,13 @@
-{
-  "name": "root-measure-user",
+﻿{
+  "name": "root-measure",
   "version": "0.2.0-beta",
-  "description": "Release-oriented Root Measure user workbench with a single root-measure CLI, guided wizard, raw rv.exe passthrough, transparent runs, artifact inspection, reproducibility checks, and expected-CSV comparison.",
+  "description": "Release-oriented Root Measure workbench with a single root-measure CLI, guided wizard, raw rv.exe passthrough, transparent runs, artifact inspection, reproducibility checks, and expected-CSV comparison.",
   "author": {
     "name": "Root Measure",
     "url": "https://github.com/Rimagination"
   },
-  "homepage": "https://github.com/Rimagination/root-measure-user",
-  "repository": "https://github.com/Rimagination/root-measure-user",
+  "homepage": "https://github.com/Rimagination/root-measure",
+  "repository": "https://github.com/Rimagination/root-measure",
   "license": "MIT",
   "keywords": [
     "root-measure",
@@ -18,7 +18,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Root Measure User",
+    "displayName": "Root Measure",
     "shortDescription": "Analyze root images through one CLI or guided Codex workflow, while preserving full rv.exe control.",
     "longDescription": "A release-oriented Root Measure companion with a single root-measure command, an interactive analysis wizard, validated-toolchain checks, transparent measurement runs, raw rv.exe passthrough, artifact inventories, features.csv inspection, viewer.html links, manifest tracing, failure-log troubleshooting, and generic expected-CSV comparison for public-data reproduction.",
     "developerName": "Root Measure",
@@ -28,9 +28,9 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/Rimagination/root-measure-user",
-    "privacyPolicyURL": "https://github.com/Rimagination/root-measure-user",
-    "termsOfServiceURL": "https://github.com/Rimagination/root-measure-user",
+    "websiteURL": "https://github.com/Rimagination/root-measure",
+    "privacyPolicyURL": "https://github.com/Rimagination/root-measure",
+    "termsOfServiceURL": "https://github.com/Rimagination/root-measure",
     "defaultPrompt": [
       "\u5e2e\u6211\u7528 Root Measure \u5206\u6790\u8fd9\u6279\u6839\u7cfb\u56fe\uff0c\u6211\u6709 DPI \u6216 pixels/mm",
       "\u542f\u52a8 Root Measure \u5206\u6790\u5411\u5bfc",
@@ -40,3 +40,4 @@
     "screenshots": []
   }
 }
+

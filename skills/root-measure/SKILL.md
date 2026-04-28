@@ -1,16 +1,16 @@
----
-name: root-measure-user
+﻿---
+name: root-measure
 description: Use when the user asks to analyze root images, run Root Measure, launch a guided workflow, choose scale or presets, inspect outputs, troubleshoot rv.exe logs, compare features.csv, or verify the local Root Measure release.
 ---
 
-# Root Measure User
+# Root Measure
 
 ## Core Rule
 
 This plugin is a user-facing product, not a script scavenger hunt. Prefer the single front door:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd <command>
+D:\VSP\plugins\root-measure\bin\root-measure.cmd <command>
 ```
 
 Do not ask normal users to open plugin scripts, edit code, or choose between internal `.ps1` files. Use internal scripts only as implementation details or when debugging the plugin itself.
@@ -37,55 +37,55 @@ Use question-style guidance only when the user's goal is unclear. Ask for the mi
 Health check:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd doctor
+D:\VSP\plugins\root-measure\bin\root-measure.cmd doctor
 ```
 
 Guided workflow:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd wizard
+D:\VSP\plugins\root-measure\bin\root-measure.cmd wizard
 ```
 
 Analyze user data:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd measure --input <path> --dpi 600 --preset broken-roots
+D:\VSP\plugins\root-measure\bin\root-measure.cmd measure --input <path> --dpi 600 --preset broken-roots
 ```
 
 Whole-root/crown style run:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd measure --input <path> --pixels-per-mm 13.27 --preset whole-root
+D:\VSP\plugins\root-measure\bin\root-measure.cmd measure --input <path> --pixels-per-mm 13.27 --preset whole-root
 ```
 
 Inspect a result:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd inspect --run <dir>
+D:\VSP\plugins\root-measure\bin\root-measure.cmd inspect --run <dir>
 ```
 
 List recent runs:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd runs --limit 10
+D:\VSP\plugins\root-measure\bin\root-measure.cmd runs --limit 10
 ```
 
 Compare only when the user explicitly has an expected CSV:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
+D:\VSP\plugins\root-measure\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
 ```
 
 Forward the full installed RVE CLI:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd raw -- -r -v -na --segment --feature --convert --factordpi 600 -op <output-dir> -o features.csv <input-path>
+D:\VSP\plugins\root-measure\bin\root-measure.cmd raw -- -r -v -na --segment --feature --convert --factordpi 600 -op <output-dir> -o features.csv <input-path>
 ```
 
 Release readiness:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd release-check
+D:\VSP\plugins\root-measure\bin\root-measure.cmd release-check
 ```
 
 ## User Data vs Reproduction
@@ -128,7 +128,7 @@ Use `root-measure toolchain --include-help` when the exact installed `rv.exe --h
 Before advising on public-data reproduction, read the codified validation-history profile:
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd profile
+D:\VSP\plugins\root-measure\bin\root-measure.cmd profile
 ```
 
 Then enforce this sequence:
@@ -174,3 +174,4 @@ For failed/partial runs, put exit code, failure reason, and log excerpt first.
 For expected-CSV comparison, include status, expected/actual hashes, key columns, duplicate policy, rows matched, exact rows, diff cell count, max differences, and where diff artifacts were written.
 
 For release checks, state pass/fail first and list only failed checks plus smoke output folder if useful.
+

@@ -1,4 +1,4 @@
-# Local editor and OS files
+﻿# Local editor and OS files
 .DS_Store
 Thumbs.db
 *.tmp
@@ -8,3 +8,4 @@ Thumbs.db
 runs/
 *.zip
 *.bundle
+

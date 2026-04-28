@@ -1,4 +1,4 @@
-# Root Measure Reproducibility Gotchas
+﻿# Root Measure Reproducibility Gotchas
 
 This file captures project history that should guide generic user workflows. It is not a dataset-specific validator.
 
@@ -32,3 +32,4 @@ This file captures project history that should guide generic user workflows. It 
 4. Inspect the output directory and preserve manifest/log/hash artifacts.
 5. Run `compare-features.ps1` against the expected CSV.
 6. Report `exact` only when the comparator reports `status: exact`.
+

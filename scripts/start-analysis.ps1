@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = ''
 )
 
@@ -201,3 +201,4 @@ switch ($task) {
   '4' { Start-TroubleshootWizard }
   '5' { Start-RawWizard }
 }
+

@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 # Keep this script free of PowerShell parameters so every rv.exe option,
@@ -14,3 +14,4 @@ if (-not (Test-Path -LiteralPath $wrapper)) {
 
 & powershell -NoProfile -ExecutionPolicy Bypass -File $wrapper @arguments
 exit $LASTEXITCODE
+

@@ -1,4 +1,4 @@
-param(
+﻿param(
   [Parameter(Mandatory = $true)]
   [string]$RunDirectory
 )
@@ -237,3 +237,4 @@ if ($viewerData -and $viewerData.images) {
     rv_log_tail = @(Read-TextTail $rvLogPath)
   }
 } | ConvertTo-Json -Depth 12
+

@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = ''
 )
 
@@ -124,3 +124,4 @@ $root = & (Join-Path $PSScriptRoot 'Resolve-RootMeasureRoot.ps1') -RootMeasureRo
     }
   )
 } | ConvertTo-Json -Depth 8
+

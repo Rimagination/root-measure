@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 function Split-CommandLine {
@@ -49,7 +49,7 @@ if ($InputArguments.Count -gt 0) {
 
 function Show-Help {
   @'
-Root Measure user CLI
+Root Measure CLI
 
 Usage:
   root-measure doctor
@@ -66,7 +66,7 @@ Usage:
 Examples:
   root-measure measure --input D:\data\scans --dpi 600 --preset broken-roots
   root-measure measure --input D:\data\whole-root --pixels-per-mm 13.27 --preset whole-root
-  root-measure inspect --run D:\VSP\root-measure\runs\root-measure-user-20260428
+  root-measure inspect --run D:\VSP\root-measure\runs\root-measure-20260428
   root-measure raw -- -r -v -na --segment --feature --convert --factordpi 600 -op D:\out -o features.csv D:\images
 
 Notes:
@@ -393,3 +393,4 @@ switch ($normalizedCommand) {
   'release-check' { Invoke-ReleaseCheck $Rest }
   default { Fail-Usage "Unknown command: $Command" }
 }
+

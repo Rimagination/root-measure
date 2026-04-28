@@ -1,4 +1,4 @@
-param(
+﻿param(
   [Parameter(Mandatory = $true)]
   [string]$InputPath,
 
@@ -67,7 +67,7 @@ $root = & (Join-Path $PSScriptRoot 'Resolve-RootMeasureRoot.ps1') -RootMeasureRo
 
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
   $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-  $OutputRoot = Join-Path $root "runs\root-measure-user-$stamp"
+  $OutputRoot = Join-Path $root "runs\root-measure-$stamp"
 }
 
 $script = Join-Path $root 'scripts\Invoke-RootMeasure.ps1'
@@ -118,3 +118,4 @@ $summary = [ordered]@{
 
 $summary | ConvertTo-Json -Depth 6
 exit $exitCode
+

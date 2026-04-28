@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = '',
   [switch]$SkipSmoke
 )
@@ -80,7 +80,7 @@ function Convert-JsonFromText {
 try {
   $manifestPath = Join-Path $pluginRoot '.codex-plugin\plugin.json'
   $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestPath | ConvertFrom-Json
-  Add-Check 'plugin_manifest' ($manifest.name -eq 'root-measure-user' -and -not [string]::IsNullOrWhiteSpace($manifest.version)) 'plugin.json parses and has identity/version.' $manifest.version
+  Add-Check 'plugin_manifest' ($manifest.name -eq 'root-measure' -and -not [string]::IsNullOrWhiteSpace($manifest.version)) 'plugin.json parses and has identity/version.' $manifest.version
 } catch {
   Add-Check 'plugin_manifest' $false 'plugin.json could not be parsed.' $_.Exception.Message
 }
@@ -88,8 +88,8 @@ try {
 $marketplacePath = Join-Path $workspaceRoot '.agents\plugins\marketplace.json'
 try {
   $marketplace = Get-Content -Raw -Encoding UTF8 -LiteralPath $marketplacePath | ConvertFrom-Json
-  $entry = @($marketplace.plugins | Where-Object { $_.name -eq 'root-measure-user' })
-  Add-Check 'marketplace_entry' ($entry.Count -eq 1 -and $entry[0].policy.installation -eq 'AVAILABLE') 'Marketplace contains an available root-measure-user entry.' ($entry | ConvertTo-Json -Depth 4)
+  $entry = @($marketplace.plugins | Where-Object { $_.name -eq 'root-measure' })
+  Add-Check 'marketplace_entry' ($entry.Count -eq 1 -and $entry[0].policy.installation -eq 'AVAILABLE') 'Marketplace contains an available root-measure entry.' ($entry | ConvertTo-Json -Depth 4)
 } catch {
   Add-Check 'marketplace_entry' $false 'Marketplace entry could not be checked.' $_.Exception.Message
 }
@@ -141,7 +141,7 @@ if (-not $SkipSmoke.IsPresent) {
     Add-Check 'scan_smoke' $false 'Could not find GitHub scan smoke images.' $scanCandidates
   } else {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $out = Join-Path $root "runs\root-measure-user-release-check-$stamp"
+    $out = Join-Path $root "runs\root-measure-release-check-$stamp"
     $measure = Invoke-RootMeasure @('measure', '--input', $scanPath[0], '--output', $out, '--preset', 'broken-roots', '--dpi', '600')
     $artifacts['smoke_run'] = $out
     Add-Check 'scan_smoke_measure' ($measure.exit_code -eq 0) 'Unified CLI measure smoke run succeeds.' ([ordered]@{
@@ -188,3 +188,4 @@ if ($failed.Count -gt 0) {
   exit 1
 }
 exit 0
+

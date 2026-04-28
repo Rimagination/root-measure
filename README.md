@@ -1,6 +1,6 @@
-# Root Measure User
+﻿# Root Measure
 
-Root Measure User 是一个 Codex 插件，用来分析根系图像并检查 Root Measure / RhizoVision Explorer CLI 的输出证据。它适合两类人：
+Root Measure 是一个 Codex 插件，用来分析根系图像并检查 Root Measure / RhizoVision Explorer CLI 的输出证据。它适合两类人：
 
 - 只想分析自己数据的用户：告诉 Codex 图像在哪里、尺度是多少，Codex 帮你跑完并解释结果。
 - 需要复现公开数据集的用户：提供图像、参数来源和 expected CSV，Codex 帮你检查工具链、运行、对比和排错。
@@ -12,13 +12,13 @@ Root Measure User 是一个 Codex 插件，用来分析根系图像并检查 Roo
 如果你是第一次使用，推荐直接把下面这句话发给 Codex：
 
 ```text
-请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure-user
+请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure
 ```
 
 更稳一点的说法是：
 
 ```text
-请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure-user。安装后请运行 Root Measure 的 doctor 和 release-check，确认插件入口、工具链 hash、示例 smoke test 都通过。
+请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure。安装后请运行 Root Measure 的 doctor 和 release-check，确认插件入口、工具链 hash、示例 smoke test 都通过。
 ```
 
 Codex 应该替你完成这些事：
@@ -44,7 +44,7 @@ Codex 应该替你完成这些事：
 或者在终端里运行：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd release-check
+D:\VSP\plugins\root-measure\bin\root-measure.cmd release-check
 ```
 
 如果通过，会看到：
@@ -82,7 +82,7 @@ status: pass
 Codex 会自动选择合适命令，通常等价于：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd measure --input D:\my-data\scans --dpi 600 --preset broken-roots
+D:\VSP\plugins\root-measure\bin\root-measure.cmd measure --input D:\my-data\scans --dpi 600 --preset broken-roots
 ```
 
 如果你不确定该怎么选参数，可以说：
@@ -94,7 +94,7 @@ D:\VSP\plugins\root-measure-user\bin\root-measure.cmd measure --input D:\my-data
 或者运行：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd wizard
+D:\VSP\plugins\root-measure\bin\root-measure.cmd wizard
 ```
 
 向导会问你：
@@ -144,13 +144,13 @@ Root Measure 最近的结果在哪里？
 或者运行：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd runs --limit 10
+D:\VSP\plugins\root-measure\bin\root-measure.cmd runs --limit 10
 ```
 
 检查某个结果目录：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd inspect --run <run-folder>
+D:\VSP\plugins\root-measure\bin\root-measure.cmd inspect --run <run-folder>
 ```
 
 ## 复现公开数据集
@@ -170,13 +170,13 @@ D:\VSP\plugins\root-measure-user\bin\root-measure.cmd inspect --run <run-folder>
 终端命令示例：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
+D:\VSP\plugins\root-measure\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
 ```
 
 如果 expected CSV 里有重复 `File.Name`，使用：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name --duplicate-key-mode BestMatch
+D:\VSP\plugins\root-measure\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name --duplicate-key-mode BestMatch
 ```
 
 注意：GitHub `imageexamples` 适合 smoke test，不是数值 oracle。要声明“和官方一致”，必须真的对比过 expected CSV。
@@ -186,7 +186,7 @@ D:\VSP\plugins\root-measure-user\bin\root-measure.cmd compare --actual <features
 如果你已经知道 RhizoVision Explorer CLI 参数，可以使用 raw 模式：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd raw -- -r -v -na --segment --feature --distancemap --convert --factordpi 600 -op <output-dir> -o features.csv <input-path>
+D:\VSP\plugins\root-measure\bin\root-measure.cmd raw -- -r -v -na --segment --feature --distancemap --convert --factordpi 600 -op <output-dir> -o features.csv <input-path>
 ```
 
 `raw --` 后面的内容会原样转发给安装的 `rv.exe`。
@@ -239,7 +239,7 @@ root-measure release-check
 插件内置了历史验证踩坑规则。Codex 在做公开数据复现或排错前应该读取：
 
 ```powershell
-D:\VSP\plugins\root-measure-user\bin\root-measure.cmd profile
+D:\VSP\plugins\root-measure\bin\root-measure.cmd profile
 ```
 
 ## 当前状态
@@ -247,3 +247,4 @@ D:\VSP\plugins\root-measure-user\bin\root-measure.cmd profile
 当前版本：`0.2.0-beta`
 
 这个版本已经适合小范围发布和真实用户试用：有统一 CLI、Codex 自然语言入口、问答向导、完整 raw CLI、透明产物、排错规则和 release check。正式 `1.0` 前建议继续补跨机器安装测试和更完整的用户示例。
+

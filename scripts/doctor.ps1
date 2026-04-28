@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$RootMeasureRoot = '',
   [string]$ExpectedRvSha256 = '666021070EC31B6599086D35CB8E6EACB7416B85A2CBAA032BCFBDCAB90080D4',
   [string]$ExpectedCvutilSha256 = 'AB6E1BEAAD64DDC02FCA9CF1952F7B5A526FEE702B33E4A2BACCAD30086AA39B',
@@ -118,3 +118,4 @@ $status = if ($failed.Count -eq 0) { 'pass' } else { 'fail' }
 if ($status -ne 'pass') {
   exit 1
 }
+

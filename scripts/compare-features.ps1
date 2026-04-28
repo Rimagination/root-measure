@@ -1,4 +1,4 @@
-param(
+﻿param(
   [Parameter(Mandatory = $true)]
   [string]$ExpectedCsv,
 
@@ -460,3 +460,4 @@ if ($status -eq 'duplicate-key-error') {
   exit 2
 }
 exit 1
+
