@@ -66,7 +66,7 @@ Usage:
 Examples:
   root-measure measure --input D:\data\scans --dpi 600 --preset broken-roots
   root-measure measure --input D:\data\whole-root --pixels-per-mm 13.27 --preset whole-root
-  root-measure inspect --run D:\VSP\root-measure\runs\root-measure-20260428
+  root-measure inspect --run D:\root-measure\runs\root-measure-20260428
   root-measure raw -- -r -v -na --segment --feature --convert --factordpi 600 -op D:\out -o features.csv D:\images
 
 Notes:

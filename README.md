@@ -1,304 +1,225 @@
-﻿# Root Measure
+# Root Measure
 
-Root Measure 是一个 Codex 插件，用来分析根系图像，并把 Root Measure / RhizoVision Explorer CLI 的参数、日志、中间图和结果表整理成可检查的证据包。它面向第一次做根系图像分析的用户，也面向需要复现公开数据集或审稿结果的研究者。
+Root Measure is a Codex plugin for root image measurement. It wraps a validated
+RhizoVision Explorer CLI workflow with guided setup, install checks, transparent
+run artifacts, and optional expected-CSV comparison.
 
-- 只想分析自己数据的用户：告诉 Codex 图像在哪里、尺度是多少，Codex 帮你跑完并解释结果。
-- 需要复现公开数据集的用户：提供图像、参数来源和 expected CSV，Codex 帮你检查工具链、运行、对比和排错。
+Root Measure 是一个用于根系图像测量的 Codex 插件。它把经过验证的
+RhizoVision Explorer CLI 工作流包装成更容易使用的安装检查、分析向导、结果证据包和
+可选的 expected CSV 对比流程。
 
-这个插件不是一个阉割版 wrapper。它提供简单入口，也保留完整 `rv.exe` 原始参数能力。
+![Root Measure product workflow](assets/root-measure-product-infographic.png)
 
-## 为什么要做这个插件
+## What It Does / 它能做什么
 
-RhizoVision Explorer 已经提供成熟的根系图像测量算法和 CLI，但真实使用时最容易出错的地方往往不在算法本身，而在“怎么跑”和“跑出来的结果能不能解释”：
+- Measures broken-root scans and whole-root/crown style images through
+  RhizoVision Explorer CLI.
+- 通过 RhizoVision Explorer CLI 测量 broken-root 扫描图和 whole-root/crown
+  类型图像。
+- Keeps the evidence: `features.csv`, `viewer.html`, `run_manifest.json`,
+  logs, segmentation images, and feature overlays.
+- 保留可追溯证据：`features.csv`、`viewer.html`、`run_manifest.json`、日志、
+  分割图和 feature overlay。
+- Helps Codex ask for the minimum required inputs: image path, root type, and
+  scale (`DPI` or `pixels/mm`) when physical units are needed.
+- 帮 Codex 只询问必要信息：图像路径、根系类型，以及需要物理单位时的尺度
+  (`DPI` 或 `pixels/mm`)。
+- Supports public-data reproduction when you provide images, parameters, and an
+  official or previous expected CSV.
+- 在你提供图像、参数和官方或历史 expected CSV 时，支持公开数据集复现。
+- Preserves full advanced control through `root-measure raw -- <rv.exe args>`.
+- 通过 `root-measure raw -- <rv.exe args>` 保留完整高级参数能力。
 
-- 用户需要记住 DPI、pixels/mm、root type、threshold、pruning、diameter ranges 等参数。
-- CLI 会生成表格、中间图和日志，但这些文件分散在结果目录里，不容易给新用户或审稿人解释。
-- 公开数据集复现要求工具链版本、参数、输入文件和 expected CSV 都对齐，一处不一致就可能导致结果偏差。
-- 用户自己的新数据通常没有 expected CSV，应该先做测量和质控，而不是被强行要求和官方结果比较。
+## Install / 安装
 
-Root Measure 的目标是把这些步骤变成 Codex 可以稳定执行的产品化流程：先确认工具链，再引导用户给出必要尺度和参数，运行完整 CLI，保留 `features.csv`、`viewer.html`、`run_manifest.json`、日志、segment 图和 feature overlay 图。这样用户看到的不只是一个最终数字，而是每个结果从哪张图、哪些参数、哪个可执行文件和哪次运行来的。
+For most Codex Desktop users, the simplest path is to ask Codex:
 
-## 它可以测哪些指标
-
-Root Measure 调用的是 RhizoVision Explorer CLI，因此核心指标来自 RVE 的 `features.csv`。实际列会随 root type、CLI 参数和输出选项变化，常见 broken-roots 扫描图会包含：
-
-- 计数和拓扑：`Number.of.Root.Tips`、`Number.of.Branch.Points`。
-- 长度和分枝：`Total.Root.Length.mm`、`Branching.frequency.per.mm`。
-- 面积、周长和体积：`Network.Area.mm2`、`Perimeter.mm`、`Surface.Area.mm2`、`Volume.mm3`。
-- 直径：`Average.Diameter.mm`、`Median.Diameter.mm`、`Maximum.Diameter.mm`。
-- 按直径范围分箱的指标：`Root.Length.Diameter.Range.*.mm`、`Projected.Area.Diameter.Range.*.mm2`、`Surface.Area.Diameter.Range.*.mm2`、`Volume.Diameter.Range.*.mm3`。
-- 运行诊断：`File.Name`、`Region.of.Interest`、`Computation.Time.s`。
-
-Whole-root / crown 图像使用对应 RVE 模式时，还可能输出根系构型相关指标，例如根系宽度、深度、凸包、角度或方向分布等。插件不会把这些模式简化掉；如果高层 `measure` 没覆盖某个 RVE 参数，可以用 `root-measure raw -- <rv.exe arguments>` 直接透传完整 CLI。
-
-注意：`Computation.Time.s` 是运行耗时，不是生物学性状；mm、mm2、mm3 等物理单位必须依赖正确的 DPI 或 pixels/mm。
-
-## 适合哪些图像
-
-Root Measure 最适合高对比度、背景相对均一、根和背景边界清楚的扫描图或拍照图，例如：
-
-- 洗净后铺在平板扫描仪上的 broken roots。
-- 完整根系、根冠或 crown 图像。
-- 已经分割或阈值化、适合交给 RVE 继续提取性状的根系图。
-
-如果图像来自 rhizobox、minirhizotron 或复杂土壤背景，通常需要先完成可靠分割，再用 Root Measure / RVE 做性状提取和证据整理。
-
-## 最简单的安装方式
-
-如果你是第一次使用，推荐直接把下面这句话发给 Codex：
+对大多数 Codex Desktop 用户，最简单的方式是直接告诉 Codex：
 
 ```text
-请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure
+Install this Codex plugin and verify it with release-check:
+https://github.com/Rimagination/root-measure
 ```
-
-更稳一点的说法是：
 
 ```text
-请帮我安装这个 Codex 插件：https://github.com/Rimagination/root-measure。安装后请运行 Root Measure 的 doctor 和 release-check，确认插件入口、工具链 hash、示例 smoke test 都通过。
+请安装这个 Codex 插件，并用 release-check 验证：
+https://github.com/Rimagination/root-measure
 ```
 
-Codex 应该替你完成这些事：
+After installation, ask Codex to run:
 
-1. 下载或复制插件到本机 Codex 可用的 plugin 目录。
-2. 确认插件目录里有 `.codex-plugin/plugin.json`。
-3. 把插件注册到 Codex marketplace / plugin 配置里。
-4. 确认 Root Measure 后端存在，也就是能找到 `rv.exe` 和 `cvutil.dll`。
-5. 运行 `root-measure doctor`。
-6. 运行 `root-measure release-check`。
-7. 告诉你安装是否成功，以及以后该怎么调用。
-
-普通用户不需要自己改代码，也不需要进入插件目录挑脚本。
-
-## 安装后如何确认可用
-
-让 Codex 执行：
-
-```text
-请检查 Root Measure 插件是否安装成功，并运行 release-check。
-```
-
-或者在终端里运行：
+安装后，让 Codex 运行：
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd release-check
+<plugin-root>\bin\root-measure.cmd release-check
 ```
 
-如果通过，会看到：
+A good install reports `status: pass`.
+
+安装成功时应看到 `status: pass`。
+
+Installation is the most technical part of this plugin. If Codex Desktop shows a
+generic "plugin install failed" toast, see
+[docs/installation.md](docs/installation.md). That guide covers local marketplace
+layout, the real Codex plugin cache path, strict UTF-8 manifest files, and the
+BOM issue that can make a valid-looking `plugin.json` fail inside Codex.
+
+安装是这个插件最容易踩坑的部分。如果 Codex Desktop 只弹出笼统的“插件安装失败”，
+请看 [docs/installation.md](docs/installation.md)。那里写了 local marketplace
+目录、Codex 真实插件缓存路径、严格 UTF-8 manifest，以及会导致 `plugin.json`
+看起来正常但 Codex 解析失败的 BOM 问题。
+
+## First Run / 第一次运行
+
+Natural language is the preferred interface:
+
+推荐直接用自然语言：
 
 ```text
-status: pass
+Use Root Measure to analyze D:\data\scans. The scan scale is 600 DPI.
 ```
-
-`release-check` 会检查：
-
-- 插件清单和 marketplace 注册
-- 用户级 `root-measure` 入口
-- PowerShell 脚本语法
-- `rv.exe` 和 `cvutil.dll` hash
-- raw `rv.exe` 参数透传
-- 历史验证坑点和 exact validation evidence
-- 3 张官方 scan 示例 smoke test
-- `inspect` 是否能读到 viewer 和 3 行结果
-- `compare` 自比较是否 exact
-
-## 第一次分析自己的数据
-
-你可以直接对 Codex 说：
 
 ```text
-帮我用 Root Measure 分析这个文件夹里的根系图：D:\my-data\scans，扫描尺度是 600 DPI。
+帮我用 Root Measure 分析 D:\data\scans，扫描尺度是 600 DPI。
 ```
 
-或者：
+If you are unsure which settings to use:
+
+如果不确定参数：
 
 ```text
-帮我分析 D:\my-data\roots，尺度是 13.27 pixels/mm，我想看中间分割图和 feature overlay。
+Start the Root Measure guided workflow.
 ```
-
-Codex 会自动选择合适命令，通常等价于：
-
-```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd measure --input D:\my-data\scans --dpi 600 --preset broken-roots
-```
-
-如果你不确定该怎么选参数，可以说：
 
 ```text
 启动 Root Measure 分析向导。
 ```
 
-或者运行：
+Command-line equivalents:
+
+等价命令：
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd wizard
+<plugin-root>\bin\root-measure.cmd wizard
+<plugin-root>\bin\root-measure.cmd measure --input D:\data\scans --dpi 600 --preset broken-roots
+<plugin-root>\bin\root-measure.cmd measure --input D:\data\roots --pixels-per-mm 13.27 --preset whole-root
 ```
 
-向导会问你：
+For your own new data, you usually do not have an expected CSV. Root Measure will
+focus on measurement and quality control: image count, scale, exact command
+arguments, output rows, generated viewer, intermediate images, and logs.
 
-- 是分析自己的新数据，还是复现公开数据集？
-- 图像文件或文件夹在哪里？
-- 是 broken roots、whole root / crown，还是不确定？
-- 是否知道 DPI 或 pixels/mm？
-- 是否需要 viewer、中间图、日志和 manifest？
+分析自己的新数据时，通常没有 expected CSV。Root Measure 默认做测量和质控：
+图像数量、尺度、真实命令参数、结果行数、viewer、中间图和日志。
 
-## 用户自己的数据没有 expected CSV
+## Outputs / 输出
 
-大多数用户自己的新数据没有 expected CSV，也不应该被要求和官方表格对比。
+Each high-level run writes a run folder, usually under the Root Measure backend
+project's `runs` directory.
 
-这种情况下，插件做的是测量和质控：
+每次高层分析都会生成一个结果目录，通常位于 Root Measure 后端项目的 `runs` 目录。
 
-- 输入图像是否找到
-- 每张图是否成功处理
-- 是否提供了 DPI 或 pixels/mm
-- 使用了哪个 preset 和哪些真实 CLI 参数
-- `features.csv` 有多少行
-- 关键指标列是否存在
-- 是否生成了 `viewer.html`
-- 是否生成了 segment 图和 feature overlay 图
-- 日志里有没有 warning 或 error
+Important files:
 
-只有当你明确说“我有 expected CSV”、“我要复现公开数据集”、“我要和之前结果对比”时，插件才会进入对比流程。
+重要文件：
 
-## 分析结果在哪里
+- `features.csv`: measurement table / 测量结果表
+- `viewer.html`: local review page / 本地结果查看页
+- `viewer-data.json`: data used by the viewer / viewer 使用的数据
+- `run_manifest.json`: inputs, parameters, tool hashes, and artifacts / 输入、参数、
+  工具 hash 和产物记录
+- `rv.stdout.txt`, `rv.stderr.txt`, `rv.log`: execution logs / 运行日志
+- segmentation and feature overlay images / 分割图和特征叠加图
 
-每次高层测量通常会生成一个结果目录，里面包括：
+Useful commands:
 
-- `features.csv`：测量指标表
-- `viewer.html`：本地证据查看器
-- `viewer-data.json`：viewer 使用的数据
-- `run_manifest.json`：输入、参数、命令、hash、产物记录
-- `rv.stdout.txt` / `rv.stderr.txt`：运行日志
-- segment 图：分割结果
-- feature overlay 图：特征叠加图
-
-你可以问 Codex：
-
-```text
-Root Measure 最近的结果在哪里？
-```
-
-或者运行：
+常用命令：
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd runs --limit 10
+<plugin-root>\bin\root-measure.cmd runs --limit 10
+<plugin-root>\bin\root-measure.cmd inspect --run <run-folder>
+<plugin-root>\bin\root-measure.cmd doctor
 ```
 
-检查某个结果目录：
+## Public Reproduction / 公开数据复现
+
+Use reproduction mode only when you have an expected CSV or a previous baseline.
+Root Measure can compare generated `features.csv` to expected results and report
+exact matches or differences.
+
+只有在你有 expected CSV 或历史 baseline 时，才进入复现/对比流程。Root Measure 可以把
+生成的 `features.csv` 和 expected 结果对比，并报告 exact 或差异。
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd inspect --run <run-folder>
+<plugin-root>\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
 ```
 
-## 复现公开数据集
+If expected rows contain duplicate `File.Name` values:
 
-公开数据集复现和普通用户数据分析不一样。你需要提供：
-
-- 下载好的图像
-- 官方或论文提供的 expected CSV
-- 参数来源，比如 settings CSV、metadata、论文方法、官方命令或之前验证记录
-
-你可以对 Codex 说：
-
-```text
-我想复现这个公开数据集。图像在 D:\data\images，expected CSV 在 D:\data\expected.csv，请帮我检查工具链、运行并比较结果。
-```
-
-终端命令示例：
+如果 expected 表里有重复的 `File.Name`：
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
+<plugin-root>\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name --duplicate-key-mode BestMatch
 ```
 
-如果 expected CSV 里有重复 `File.Name`，使用：
+The GitHub `imageexamples` are smoke tests, not numeric oracles. Do not claim
+official agreement unless `compare` has checked the generated table against the
+expected CSV.
+
+GitHub `imageexamples` 适合 smoke test，不是数值标准答案。只有 `compare`
+真正对比过 expected CSV 后，才应声明“和官方结果一致”。
+
+More details: [docs/reproducibility.md](docs/reproducibility.md).
+
+更多说明见：[docs/reproducibility.md](docs/reproducibility.md)。
+
+## Troubleshooting / 排错
+
+Start with:
+
+先运行：
 
 ```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name --duplicate-key-mode BestMatch
+<plugin-root>\bin\root-measure.cmd doctor
+<plugin-root>\bin\root-measure.cmd release-check
 ```
 
-注意：GitHub `imageexamples` 适合 smoke test，不是数值 oracle。要声明“和官方一致”，必须真的对比过 expected CSV。
-
-## 高级用户：完整 rv.exe 参数
-
-如果你已经知道 RhizoVision Explorer CLI 参数，可以使用 raw 模式：
-
-```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd raw -- -r -v -na --segment --feature --distancemap --convert --factordpi 600 -op <output-dir> -o features.csv <input-path>
-```
-
-`raw --` 后面的内容会原样转发给安装的 `rv.exe`。
-
-这用于：
-
-- ROI
-- metadata CSV
-- recursive mode
-- append / noappend
-- distance map
-- topology
-- convex hull
-- medial axis
-- contour width
-- 自定义 threshold、filtering、pruning、diameter ranges
-
-## 常用命令
-
-```powershell
-root-measure doctor
-root-measure wizard
-root-measure measure --input <path> --dpi 600 --preset broken-roots
-root-measure measure --input <path> --pixels-per-mm 13.27 --preset whole-root
-root-measure runs --limit 10
-root-measure inspect --run <dir>
-root-measure compare --actual <features.csv> --expected <expected.csv> --key File.Name
-root-measure raw -- <rv.exe arguments>
-root-measure profile
-root-measure release-check
-```
-
-## 排错
-
-先让 Codex 运行：
-
-```text
-请帮我诊断 Root Measure 插件，先跑 doctor，再检查最近一次结果目录。
-```
+Common problems:
 
 常见问题：
 
-- 没有物理尺度：需要 DPI 或 pixels/mm，否则 mm、面积、体积指标不能当作物理测量解释。
-- 工具链 hash 不一致：不要沿用旧的公开数据验证结论，先重新对比。
-- 没有中间图：检查是否启用了 segment / feature overlay。
-- 行数不对：检查输入目录、递归选项、失败图像、输出 append 设置。
-- 官方结果不一致：检查参数、DPI、threshold、duplicate key、`Computation.Time.s`。
-- whole-root 结果异常：检查 root type、反色、方向、scale、prune、diameter ranges。
+- Missing scale: provide `DPI` or `pixels/mm` before interpreting mm, mm2, or mm3.
+- 缺少尺度：解释 mm、mm2、mm3 等物理单位前，必须提供 `DPI` 或 `pixels/mm`。
+- Install failure: check strict UTF-8 without BOM and the Codex cache layout in
+  [docs/installation.md](docs/installation.md).
+- 安装失败：检查无 BOM 的严格 UTF-8，以及 [docs/installation.md](docs/installation.md)
+  中的 Codex cache 结构。
+- Toolchain hash mismatch: treat results as a new baseline until re-compared.
+- 工具链 hash 不一致：在重新对比前，不要沿用旧验证结论。
+- Unexpected row count: check input folder, recursion, failed images, and append
+  settings.
+- 行数不对：检查输入目录、递归、失败图像和 append 设置。
+- Public result mismatch: check parameters, scale, threshold, duplicate keys, and
+  volatile columns such as `Computation.Time.s`.
+- 公开结果不一致：检查参数、尺度、threshold、重复 key，以及
+  `Computation.Time.s` 这类易变列。
 
-插件内置了历史验证踩坑规则。Codex 在做公开数据复现或排错前应该读取：
+## Documentation / 文档
 
-```powershell
-D:\VSP\plugins\root-measure\bin\root-measure.cmd profile
-```
+- [docs/installation.md](docs/installation.md): Codex installation and known
+  install pitfalls / Codex 安装与常见安装坑
+- [docs/usage.md](docs/usage.md): everyday measurement workflow / 日常分析流程
+- [docs/reproducibility.md](docs/reproducibility.md): expected CSV comparison and
+  public-data reproduction / expected CSV 对比与公开数据复现
+- [docs/reproducibility-gotchas.md](docs/reproducibility-gotchas.md): detailed
+  validation pitfalls / 详细验证踩坑记录
 
-## 当前状态
+## References / 参考资料
 
-当前版本：`0.2.0-beta`
-
-这个版本已经适合小范围发布和真实用户试用：有统一 CLI、Codex 自然语言入口、问答向导、完整 raw CLI、透明产物、排错规则和 release check。正式 `1.0` 前建议继续补跨机器安装测试和更完整的用户示例。
-
-## 参考资料
-
-核心软件和文献：
-
-- RhizoVision Explorer 官网：https://www.rhizovision.com/
-- RhizoVision Explorer GitHub 仓库：https://github.com/predictivephenomics/RhizoVisionExplorer
-- 官方示例图 `imageexamples`：https://github.com/predictivephenomics/RhizoVisionExplorer/tree/main/imageexamples
-- Seethepalli, A., Dhakal, K., Griffiths, M., Guo, H., Freschet, G. T., & York, L. M. (2021). RhizoVision Explorer: open-source software for root image analysis and measurement standardization. AoB PLANTS, 13(6), plab056. https://doi.org/10.1093/aobpla/plab056
-- RhizoVision Explorer Zenodo 软件发布页：https://doi.org/10.5281/zenodo.3747697
-
-公开验证和复现实验常用数据：
-
-- Copper wire ground truth 数据集，用于验证 length、average diameter、surface area、volume：https://doi.org/10.5281/zenodo.4677546
-- 多物种根系扫描图，包含 maize、wheat、herbaceous species、tree roots 以及 RVE / WinRhizo 表格结果：https://doi.org/10.5281/zenodo.4677751
-- RVE 论文数据和统计代码，用于复现论文验证分析：https://doi.org/10.5281/zenodo.4677553
-- 多扫描拼接与统计分析测试数据，包含 Original 和 Concatenated images：https://doi.org/10.5281/zenodo.12667584
-- Whole-root 数值参考相关数据集：Dataset: Bridging Time-series Image Phenotyping and Functional-Structural Plant Modeling to Predict Adventitious Root System Architecture：https://doi.org/10.5281/zenodo.8083525
-
+- RhizoVision Explorer: https://www.rhizovision.com/
+- RhizoVision Explorer GitHub:
+  https://github.com/predictivephenomics/RhizoVisionExplorer
+- Seethepalli, A. et al. (2021). RhizoVision Explorer: open-source software for
+  root image analysis and measurement standardization. AoB PLANTS, 13(6), plab056.
+  https://doi.org/10.1093/aobpla/plab056
+- RhizoVision Explorer Zenodo release: https://doi.org/10.5281/zenodo.3747697

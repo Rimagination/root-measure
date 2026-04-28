@@ -7,10 +7,27 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 $pluginRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$workspaceRoot = (Resolve-Path (Join-Path $pluginRoot '..\..')).Path
 $rootCli = Join-Path $PSScriptRoot 'root-measure.ps1'
 $checks = New-Object System.Collections.Generic.List[object]
 $artifacts = [ordered]@{}
+
+function Resolve-MarketplacePath {
+  $current = [System.IO.DirectoryInfo]::new($pluginRoot)
+  while ($null -ne $current) {
+    $candidate = Join-Path $current.FullName '.agents\plugins\marketplace.json'
+    if (Test-Path -LiteralPath $candidate) {
+      return (Resolve-Path -LiteralPath $candidate).Path
+    }
+    $current = $current.Parent
+  }
+
+  $homeCandidate = Join-Path $HOME '.agents\plugins\marketplace.json'
+  if (Test-Path -LiteralPath $homeCandidate) {
+    return (Resolve-Path -LiteralPath $homeCandidate).Path
+  }
+
+  return $null
+}
 
 function New-Check {
   param(
@@ -35,6 +52,49 @@ function Add-Check {
     [AllowNull()]$Actual = $null
   )
   $checks.Add((New-Check $Name $Pass $Message $Actual)) | Out-Null
+}
+
+function Test-StrictUtf8NoBom {
+  param([string]$Path)
+
+  if (-not (Test-Path -LiteralPath $Path)) {
+    return [pscustomobject]@{
+      pass = $false
+      message = 'File does not exist.'
+      first_bytes = ''
+    }
+  }
+
+  $bytes = [System.IO.File]::ReadAllBytes($Path)
+  $firstBytes = if ($bytes.Length -eq 0) {
+    ''
+  } else {
+    (($bytes[0..([Math]::Min(7, $bytes.Length - 1))] | ForEach-Object { $_.ToString('X2') }) -join ' ')
+  }
+  $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+  if ($hasBom) {
+    return [pscustomobject]@{
+      pass = $false
+      message = 'File starts with a UTF-8 BOM.'
+      first_bytes = $firstBytes
+    }
+  }
+
+  try {
+    $strictUtf8 = [System.Text.UTF8Encoding]::new($false, $true)
+    $strictUtf8.GetString($bytes) | Out-Null
+    return [pscustomobject]@{
+      pass = $true
+      message = 'Strict UTF-8 without BOM.'
+      first_bytes = $firstBytes
+    }
+  } catch {
+    return [pscustomobject]@{
+      pass = $false
+      message = "Invalid UTF-8: $($_.Exception.Message)"
+      first_bytes = $firstBytes
+    }
+  }
 }
 
 function Invoke-RootMeasure {
@@ -79,14 +139,21 @@ function Convert-JsonFromText {
 
 try {
   $manifestPath = Join-Path $pluginRoot '.codex-plugin\plugin.json'
+  $manifestEncoding = Test-StrictUtf8NoBom $manifestPath
+  Add-Check 'plugin_manifest_encoding' $manifestEncoding.pass 'plugin.json is strict UTF-8 without BOM.' $manifestEncoding
   $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestPath | ConvertFrom-Json
   Add-Check 'plugin_manifest' ($manifest.name -eq 'root-measure' -and -not [string]::IsNullOrWhiteSpace($manifest.version)) 'plugin.json parses and has identity/version.' $manifest.version
 } catch {
   Add-Check 'plugin_manifest' $false 'plugin.json could not be parsed.' $_.Exception.Message
 }
 
-$marketplacePath = Join-Path $workspaceRoot '.agents\plugins\marketplace.json'
+$marketplacePath = Resolve-MarketplacePath
 try {
+  if ([string]::IsNullOrWhiteSpace($marketplacePath)) {
+    throw 'Could not find .agents\plugins\marketplace.json from plugin root or user home.'
+  }
+  $marketplaceEncoding = Test-StrictUtf8NoBom $marketplacePath
+  Add-Check 'marketplace_encoding' $marketplaceEncoding.pass 'marketplace.json is strict UTF-8 without BOM.' $marketplaceEncoding
   $marketplace = Get-Content -Raw -Encoding UTF8 -LiteralPath $marketplacePath | ConvertFrom-Json
   $entry = @($marketplace.plugins | Where-Object { $_.name -eq 'root-measure' })
   Add-Check 'marketplace_entry' ($entry.Count -eq 1 -and $entry[0].policy.installation -eq 'AVAILABLE') 'Marketplace contains an available root-measure entry.' ($entry | ConvertTo-Json -Depth 4)

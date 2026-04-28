@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "root-measure",
   "version": "0.2.0-beta",
-  "description": "Release-oriented Root Measure workbench with a single root-measure CLI, guided wizard, raw rv.exe passthrough, transparent runs, artifact inspection, reproducibility checks, and expected-CSV comparison.",
+  "description": "Guided Codex workflows for root image measurement, install verification, transparent run artifacts, and optional expected-CSV comparison.",
   "author": {
     "name": "Root Measure",
     "url": "https://github.com/Rimagination"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Root Measure",
-    "shortDescription": "Analyze root images through one CLI or guided Codex workflow, while preserving full rv.exe control.",
-    "longDescription": "A release-oriented Root Measure companion with a single root-measure command, an interactive analysis wizard, validated-toolchain checks, transparent measurement runs, raw rv.exe passthrough, artifact inventories, features.csv inspection, viewer.html links, manifest tracing, failure-log troubleshooting, and generic expected-CSV comparison for public-data reproduction.",
+    "shortDescription": "Measure root images, inspect outputs, and verify installs with guided RhizoVision Explorer workflows.",
+    "longDescription": "Root Measure helps Codex install, verify, and run root image measurement workflows. It provides a guided setup for user data, strict release checks for local plugin installs, validated toolchain checks, transparent artifacts, features.csv inspection, viewer.html links, raw rv.exe passthrough, and expected-CSV comparison for public-data reproduction.",
     "developerName": "Root Measure",
     "category": "Science",
     "capabilities": [
@@ -32,9 +32,9 @@
     "privacyPolicyURL": "https://github.com/Rimagination/root-measure",
     "termsOfServiceURL": "https://github.com/Rimagination/root-measure",
     "defaultPrompt": [
-      "\u5e2e\u6211\u7528 Root Measure \u5206\u6790\u8fd9\u6279\u6839\u7cfb\u56fe\uff0c\u6211\u6709 DPI \u6216 pixels/mm",
+      "Analyze a root-image folder with Root Measure",
       "\u542f\u52a8 Root Measure \u5206\u6790\u5411\u5bfc",
-      "\u68c0\u67e5 Root Measure \u5de5\u5177\u94fe\u548c\u53d1\u5e03\u72b6\u6001"
+      "\u8bca\u65ad Root Measure \u5b89\u88c5\u5e76\u8fd0\u884c release-check"
     ],
     "brandColor": "#12664F",
     "screenshots": []
