@@ -1,0 +1,10 @@
+# Local editor and OS files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Runtime outputs belong in the Root Measure project, not the plugin repo
+runs/
+*.zip
+*.bundle

@@ -1,0 +1,42 @@
+{
+  "name": "root-measure-user",
+  "version": "0.2.0-beta",
+  "description": "Release-oriented Root Measure user workbench with a single root-measure CLI, guided wizard, raw rv.exe passthrough, transparent runs, artifact inspection, reproducibility checks, and expected-CSV comparison.",
+  "author": {
+    "name": "Root Measure",
+    "url": "https://github.com/Rimagination"
+  },
+  "homepage": "https://github.com/Rimagination/root-measure-user",
+  "repository": "https://github.com/Rimagination/root-measure-user",
+  "license": "MIT",
+  "keywords": [
+    "root-measure",
+    "rhizovision",
+    "root-analysis",
+    "features-csv",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Root Measure User",
+    "shortDescription": "Analyze root images through one CLI or guided Codex workflow, while preserving full rv.exe control.",
+    "longDescription": "A release-oriented Root Measure companion with a single root-measure command, an interactive analysis wizard, validated-toolchain checks, transparent measurement runs, raw rv.exe passthrough, artifact inventories, features.csv inspection, viewer.html links, manifest tracing, failure-log troubleshooting, and generic expected-CSV comparison for public-data reproduction.",
+    "developerName": "Root Measure",
+    "category": "Science",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Rimagination/root-measure-user",
+    "privacyPolicyURL": "https://github.com/Rimagination/root-measure-user",
+    "termsOfServiceURL": "https://github.com/Rimagination/root-measure-user",
+    "defaultPrompt": [
+      "\u5e2e\u6211\u7528 Root Measure \u5206\u6790\u8fd9\u6279\u6839\u7cfb\u56fe\uff0c\u6211\u6709 DPI \u6216 pixels/mm",
+      "\u542f\u52a8 Root Measure \u5206\u6790\u5411\u5bfc",
+      "\u68c0\u67e5 Root Measure \u5de5\u5177\u94fe\u548c\u53d1\u5e03\u72b6\u6001"
+    ],
+    "brandColor": "#12664F",
+    "screenshots": []
+  }
+}
