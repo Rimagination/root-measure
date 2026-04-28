@@ -1,11 +1,47 @@
 ﻿# Root Measure
 
-Root Measure 是一个 Codex 插件，用来分析根系图像并检查 Root Measure / RhizoVision Explorer CLI 的输出证据。它适合两类人：
+Root Measure 是一个 Codex 插件，用来分析根系图像，并把 Root Measure / RhizoVision Explorer CLI 的参数、日志、中间图和结果表整理成可检查的证据包。它面向第一次做根系图像分析的用户，也面向需要复现公开数据集或审稿结果的研究者。
 
 - 只想分析自己数据的用户：告诉 Codex 图像在哪里、尺度是多少，Codex 帮你跑完并解释结果。
 - 需要复现公开数据集的用户：提供图像、参数来源和 expected CSV，Codex 帮你检查工具链、运行、对比和排错。
 
 这个插件不是一个阉割版 wrapper。它提供简单入口，也保留完整 `rv.exe` 原始参数能力。
+
+## 为什么要做这个插件
+
+RhizoVision Explorer 已经提供成熟的根系图像测量算法和 CLI，但真实使用时最容易出错的地方往往不在算法本身，而在“怎么跑”和“跑出来的结果能不能解释”：
+
+- 用户需要记住 DPI、pixels/mm、root type、threshold、pruning、diameter ranges 等参数。
+- CLI 会生成表格、中间图和日志，但这些文件分散在结果目录里，不容易给新用户或审稿人解释。
+- 公开数据集复现要求工具链版本、参数、输入文件和 expected CSV 都对齐，一处不一致就可能导致结果偏差。
+- 用户自己的新数据通常没有 expected CSV，应该先做测量和质控，而不是被强行要求和官方结果比较。
+
+Root Measure 的目标是把这些步骤变成 Codex 可以稳定执行的产品化流程：先确认工具链，再引导用户给出必要尺度和参数，运行完整 CLI，保留 `features.csv`、`viewer.html`、`run_manifest.json`、日志、segment 图和 feature overlay 图。这样用户看到的不只是一个最终数字，而是每个结果从哪张图、哪些参数、哪个可执行文件和哪次运行来的。
+
+## 它可以测哪些指标
+
+Root Measure 调用的是 RhizoVision Explorer CLI，因此核心指标来自 RVE 的 `features.csv`。实际列会随 root type、CLI 参数和输出选项变化，常见 broken-roots 扫描图会包含：
+
+- 计数和拓扑：`Number.of.Root.Tips`、`Number.of.Branch.Points`。
+- 长度和分枝：`Total.Root.Length.mm`、`Branching.frequency.per.mm`。
+- 面积、周长和体积：`Network.Area.mm2`、`Perimeter.mm`、`Surface.Area.mm2`、`Volume.mm3`。
+- 直径：`Average.Diameter.mm`、`Median.Diameter.mm`、`Maximum.Diameter.mm`。
+- 按直径范围分箱的指标：`Root.Length.Diameter.Range.*.mm`、`Projected.Area.Diameter.Range.*.mm2`、`Surface.Area.Diameter.Range.*.mm2`、`Volume.Diameter.Range.*.mm3`。
+- 运行诊断：`File.Name`、`Region.of.Interest`、`Computation.Time.s`。
+
+Whole-root / crown 图像使用对应 RVE 模式时，还可能输出根系构型相关指标，例如根系宽度、深度、凸包、角度或方向分布等。插件不会把这些模式简化掉；如果高层 `measure` 没覆盖某个 RVE 参数，可以用 `root-measure raw -- <rv.exe arguments>` 直接透传完整 CLI。
+
+注意：`Computation.Time.s` 是运行耗时，不是生物学性状；mm、mm2、mm3 等物理单位必须依赖正确的 DPI 或 pixels/mm。
+
+## 适合哪些图像
+
+Root Measure 最适合高对比度、背景相对均一、根和背景边界清楚的扫描图或拍照图，例如：
+
+- 洗净后铺在平板扫描仪上的 broken roots。
+- 完整根系、根冠或 crown 图像。
+- 已经分割或阈值化、适合交给 RVE 继续提取性状的根系图。
+
+如果图像来自 rhizobox、minirhizotron 或复杂土壤背景，通常需要先完成可靠分割，再用 Root Measure / RVE 做性状提取和证据整理。
 
 ## 最简单的安装方式
 
@@ -247,4 +283,22 @@ D:\VSP\plugins\root-measure\bin\root-measure.cmd profile
 当前版本：`0.2.0-beta`
 
 这个版本已经适合小范围发布和真实用户试用：有统一 CLI、Codex 自然语言入口、问答向导、完整 raw CLI、透明产物、排错规则和 release check。正式 `1.0` 前建议继续补跨机器安装测试和更完整的用户示例。
+
+## 参考资料
+
+核心软件和文献：
+
+- RhizoVision Explorer 官网：https://www.rhizovision.com/
+- RhizoVision Explorer GitHub 仓库：https://github.com/predictivephenomics/RhizoVisionExplorer
+- 官方示例图 `imageexamples`：https://github.com/predictivephenomics/RhizoVisionExplorer/tree/main/imageexamples
+- Seethepalli, A., Dhakal, K., Griffiths, M., Guo, H., Freschet, G. T., & York, L. M. (2021). RhizoVision Explorer: open-source software for root image analysis and measurement standardization. AoB PLANTS, 13(6), plab056. https://doi.org/10.1093/aobpla/plab056
+- RhizoVision Explorer Zenodo 软件发布页：https://doi.org/10.5281/zenodo.3747697
+
+公开验证和复现实验常用数据：
+
+- Copper wire ground truth 数据集，用于验证 length、average diameter、surface area、volume：https://doi.org/10.5281/zenodo.4677546
+- 多物种根系扫描图，包含 maize、wheat、herbaceous species、tree roots 以及 RVE / WinRhizo 表格结果：https://doi.org/10.5281/zenodo.4677751
+- RVE 论文数据和统计代码，用于复现论文验证分析：https://doi.org/10.5281/zenodo.4677553
+- 多扫描拼接与统计分析测试数据，包含 Original 和 Concatenated images：https://doi.org/10.5281/zenodo.12667584
+- Whole-root 数值参考相关数据集：Dataset: Bridging Time-series Image Phenotyping and Functional-Structural Plant Modeling to Predict Adventitious Root System Architecture：https://doi.org/10.5281/zenodo.8083525
 
