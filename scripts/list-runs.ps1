@@ -1,5 +1,6 @@
-﻿param(
+param(
   [string]$RootMeasureRoot = '',
+  [string]$SearchPath = '',
   [int]$Limit = 20
 )
 
@@ -37,7 +38,19 @@ function Find-FeatureCsv {
 }
 
 $root = & (Join-Path $PSScriptRoot 'Resolve-RootMeasureRoot.ps1') -RootMeasureRoot $RootMeasureRoot
-$runsRoot = Join-Path $root 'runs'
+if (-not [string]::IsNullOrWhiteSpace($SearchPath)) {
+  $resolvedSearch = (Resolve-Path -LiteralPath $SearchPath).Path
+  $searchItem = Get-Item -LiteralPath $resolvedSearch
+  if ($searchItem.PSIsContainer -and $searchItem.Name -eq 'root-measure-results') {
+    $runsRoot = $searchItem.FullName
+  } elseif ($searchItem.PSIsContainer) {
+    $runsRoot = Join-Path $searchItem.FullName 'root-measure-results'
+  } else {
+    $runsRoot = Join-Path $searchItem.Directory.FullName 'root-measure-results'
+  }
+} else {
+  $runsRoot = Join-Path $root 'runs'
+}
 
 if (-not (Test-Path -LiteralPath $runsRoot)) {
   [ordered]@{
@@ -96,4 +109,3 @@ $runs = @(Get-ChildItem -LiteralPath $runsRoot -Directory | ForEach-Object {
   count = $runs.Count
   runs = @($runs)
 } | ConvertTo-Json -Depth 7
-

@@ -1,0 +1,25 @@
+RhizoVision Analyzer Version, 2.0.1
+Image Path, 
+Output Path, 
+Root type, Broken roots
+Image Thresholding Level, 220
+Invert images, false
+Keep largest component, true
+Filter noisy components on background, true
+Maximum background noisy component size, 1
+Filter noisy components on foreground, false
+Maximum foreground noisy component size, 1
+Enable edge smoothing, false
+Edge smoothing threshold, 2
+Enable root pruning, true
+Root pruning threshold, 5
+Convert pixels to physical units, true
+Dots per inch, 600
+Pixel to millimeter conversion factor, 0.0423333
+Diameter Range 1, 0, 0.3
+Diameter Range 2, 0.3, above
+Features output file name, features.csv
+Save segmented images, false
+Segmented image file name suffix, 
+Save processed feature images, false
+Processed image file name suffix, 

@@ -62,8 +62,14 @@ $checks += New-Check 'no_literal_prefix_install_dir' (-not (Test-Path -LiteralPa
 $checks += New-Check 'no_literal_install_dir' (-not (Test-Path -LiteralPath $installDir)) 'No suspicious literal $install install directory at project root.' $installDir $null
 
 $rawPassthroughVersion = @()
-if (Test-Path -LiteralPath $rawWrapper) {
-  $rawPassthroughVersion = @(& powershell -NoProfile -ExecutionPolicy Bypass -File $rawWrapper --version 2>&1 | ForEach-Object { [string]$_ })
+if ((Test-Path -LiteralPath $rawWrapper) -and (Test-Path -LiteralPath $rv)) {
+  try {
+    $rawPassthroughVersion = @(& powershell -NoProfile -ExecutionPolicy Bypass -File $rawWrapper --version 2>&1 | ForEach-Object { [string]$_ })
+  } catch {
+    $rawPassthroughVersion = @($_.Exception.Message)
+  }
+} elseif (Test-Path -LiteralPath $rawWrapper) {
+  $rawPassthroughVersion = @("rv.exe not found at $rv")
 }
 $checks += New-Check 'raw_passthrough_version' ($rawPassthroughVersion -join "`n" -match 'RhizoVision Explorer CLI') 'Raw passthrough can forward --version to rv.exe.' ($rawPassthroughVersion -join "`n") 'RhizoVision Explorer CLI'
 

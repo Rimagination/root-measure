@@ -1,13 +1,16 @@
 # Installation Guide / 安装指南
 
 This document is for users or agents installing Root Measure into Codex Desktop.
-The short version is: install the plugin, then run `release-check`. The long
-version below exists because local Codex plugin installation has a few sharp
-edges.
+The short version is: install the plugin, then run `release-check`. For an
+installed bundled release, that should work directly. For a source checkout
+that does not include the bundled toolchain, use `--root-measure-root` or
+`ROOT_MEASURE_ROOT` to point at a full backend root.
 
-这份文档给需要把 Root Measure 安装到 Codex Desktop 的用户或 agent 使用。简短版是：
-安装插件，然后运行 `release-check`。下面的长版是为了避免 local Codex 插件安装中的
-几个常见坑。
+这份文档给需要把 Root Measure 安装到 Codex Desktop 的用户或 agent 使用。
+简短版本是：先安装插件，再运行 `release-check`。如果你使用的是已打包的
+bundled release，这一步应该可以直接通过；如果你拿的是不带 bundled
+toolchain 的源码副本，则需要用 `--root-measure-root` 或
+`ROOT_MEASURE_ROOT` 指向完整后端目录。
 
 ## Recommended Prompt / 推荐安装提示词
 
@@ -24,7 +27,7 @@ https://github.com/Rimagination/root-measure
 Ask Codex to report the plugin path, marketplace name, installed cache path, and
 the final `release-check` status.
 
-让 Codex 报告插件路径、marketplace 名称、安装缓存路径，以及最终的
+建议让 Codex 同时报告插件路径、marketplace 名称、安装缓存路径，以及最终
 `release-check` 状态。
 
 ## Expected Layout / 期望目录结构
@@ -50,7 +53,7 @@ For a home-local marketplace, the source layout should look like:
 
 The marketplace entry should use a relative local source path:
 
-marketplace 条目应使用相对 local source path：
+marketplace 条目应使用相对的 local source path：
 
 ```json
 {
@@ -71,7 +74,7 @@ After Codex installs the plugin, the installed copy lives in the Codex plugin
 cache, not directly under `.codex/plugins/root-measure`:
 
 Codex 安装后，插件副本位于 Codex plugin cache，而不是直接放在
-`.codex/plugins/root-measure`：
+`.codex/plugins/root-measure` 下：
 
 ```text
 <CODEX_HOME>/plugins/cache/<marketplace-name>/root-measure/<version>/
@@ -89,39 +92,52 @@ C:\Users\<you>\.codex\plugins\cache\local-plugins\root-measure\0.2.0-beta\
 
 Run from the source plugin or installed plugin:
 
-可以从源插件或已安装插件运行：
+可以从源码插件目录或已安装插件目录运行：
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd doctor
 <plugin-root>\bin\root-measure.cmd release-check
 ```
 
+If the current checkout does not bundle `tools\rve-toolchain`, verify against a
+full backend root explicitly:
+
+如果当前副本没有内置 `tools\rve-toolchain`，请显式指定完整后端目录：
+
+```powershell
+<plugin-root>\bin\root-measure.cmd doctor --root-measure-root D:\path\to\root-measure
+<plugin-root>\bin\root-measure.cmd release-check --root-measure-root D:\path\to\root-measure
+```
+
 `doctor` checks the backend toolchain and wrapper commands.
 
-`doctor` 检查后端工具链和 wrapper 命令。
+`doctor` 会检查后端工具链和 wrapper 命令。
 
 `release-check` checks:
 
-`release-check` 检查：
+`release-check` 会检查：
 
 - `plugin.json` identity and strict UTF-8 encoding
-- `plugin.json` 身份信息和严格 UTF-8 编码
 - marketplace entry and strict UTF-8 encoding
-- marketplace 条目和严格 UTF-8 编码
 - PowerShell syntax
-- PowerShell 语法
 - `rv.exe` and `cvutil.dll` hashes
-- `rv.exe` 和 `cvutil.dll` hash
 - raw `rv.exe` passthrough
+- reproducibility profile
+- smoke measurement, inspect, and self-compare
+
+对应中文含义：
+
+- `plugin.json` 身份信息和严格 UTF-8 编码
+- marketplace 条目和严格 UTF-8 编码
+- PowerShell 语法
+- `rv.exe` 和 `cvutil.dll` hash
 - raw `rv.exe` 参数透传
 - reproducibility profile
-- 复现 profile
-- smoke measurement, inspect, and self-compare
-- smoke 测量、inspect 和自比较
+- smoke 测量、`inspect` 和自比较
 
-A successful install should end with:
+A successful bundled install should end with:
 
-成功安装应看到：
+成功的 bundled 安装应看到：
 
 ```text
 "status": "pass"
@@ -134,12 +150,12 @@ A successful install should end with:
 Codex's plugin loader expects strict JSON. A file that PowerShell can parse may
 still fail inside Codex if it starts with a UTF-8 BOM.
 
-Codex 的插件加载器按严格 JSON 解析。某个 JSON 文件即使 PowerShell 能解析，如果开头
-带 UTF-8 BOM，Codex 里仍然可能失败。
+Codex 的插件加载器按严格 JSON 解析。某个 JSON 文件即使 PowerShell 能读，
+只要文件头带 UTF-8 BOM，Codex 里仍然可能失败。
 
 Bad first bytes:
 
-错误开头字节：
+错误文件头：
 
 ```text
 EF BB BF 7B ...
@@ -147,7 +163,7 @@ EF BB BF 7B ...
 
 Good first bytes:
 
-正确开头字节：
+正确文件头：
 
 ```text
 7B ...
@@ -155,18 +171,13 @@ Good first bytes:
 
 The Codex log symptom is usually:
 
-Codex 日志里的典型症状是：
+Codex 日志里的典型报错通常是：
 
 ```text
 failed to parse plugin manifest: expected value at line 1 column 1
 ```
 
-Root Measure's `release-check` now includes encoding checks to catch this before
-publishing.
-
-Root Measure 的 `release-check` 已加入编码检查，发布前会拦住这个问题。
-
-### Wrong installed directory / 安装目录判断错
+### Wrong installed directory / 装错位置
 
 The install cache path is:
 
@@ -176,10 +187,9 @@ The install cache path is:
 <CODEX_HOME>/plugins/cache/<marketplace-name>/root-measure/<version>
 ```
 
-Do not assume that an installed plugin is active just because this directory
-exists:
+Do not assume the plugin is active just because this directory exists:
 
-不要仅因为下面这个目录存在就认为插件已按 Codex 规则安装成功：
+不要因为下面这个目录存在，就认为插件已按 Codex 规则安装成功：
 
 ```text
 <CODEX_HOME>/plugins/root-measure
@@ -188,7 +198,7 @@ exists:
 That path can be useful for manual testing, but Codex Desktop resolves installed
 plugins through the cache layout.
 
-那个路径可用于手工测试，但 Codex Desktop 解析已安装插件时走的是 cache 结构。
+那个路径可用于手动测试，但 Codex Desktop 识别已安装插件时走的是 cache 结构。
 
 ### Marketplace name drift / Marketplace 名称漂移
 
@@ -207,10 +217,18 @@ the plugin under the new id.
 
 ### Backend not found / 找不到后端
 
-The plugin is a Codex front door. It still needs the Root Measure backend project
-that contains:
+An installed bundled release should use the files inside the installed plugin
+repository and should not require a sibling workspace such as a private
+`D:\VSP\root-measure` checkout.
 
-插件是 Codex 入口，仍然需要包含以下内容的 Root Measure 后端项目：
+正常 bundled 安装会直接使用插件自身目录里的文件，不应再依赖类似
+`D:\VSP\root-measure` 这样的私有同级工作区。
+
+For a source checkout without the bundled toolchain, advanced local development,
+or a custom unpacked backend, the Root Measure root must contain:
+
+只有在源码副本不带 bundled toolchain、高级本地开发，或你自己维护后端目录时，
+`Root Measure root` 才需要包含：
 
 ```text
 scripts/Invoke-RootMeasure.ps1
@@ -218,33 +236,27 @@ tools/rve-toolchain/rv.exe
 tools/rve-toolchain/cvutil.dll
 ```
 
-If the backend is in a custom location, set:
+If you intentionally keep the backend in a custom location, set:
 
-如果后端在自定义位置，可以设置：
+如果你确实把后端放在自定义位置，可以设置：
 
 ```powershell
 $env:ROOT_MEASURE_ROOT = "D:\path\to\root-measure"
 ```
 
-or pass:
+or pass an explicit override:
 
-或传入：
+或者显式传入覆盖路径：
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd doctor --root-measure-root D:\path\to\root-measure
 ```
 
-## Installer Checklist / 安装者检查清单
+## Installer Checklist / 安装检查清单
 
 - Source directory contains `.codex-plugin/plugin.json`.
-- 源目录包含 `.codex-plugin/plugin.json`。
 - `plugin.json` and `marketplace.json` are UTF-8 without BOM.
-- `plugin.json` 和 `marketplace.json` 是无 BOM 的 UTF-8。
 - Marketplace entry uses `source.path: "./plugins/root-measure"`.
-- marketplace 条目使用 `source.path: "./plugins/root-measure"`。
 - Installed cache path is under `plugins/cache/<marketplace>/root-measure/<version>`.
-- 已安装缓存路径位于 `plugins/cache/<marketplace>/root-measure/<version>`。
 - `root-measure.cmd doctor` passes.
-- `root-measure.cmd doctor` 通过。
 - `root-measure.cmd release-check` passes.
-- `root-measure.cmd release-check` 通过。

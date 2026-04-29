@@ -56,7 +56,7 @@ Usage:
   root-measure measure --input <path> [--output <dir>] [--preset broken-roots|whole-root|custom] [--dpi <n>|--pixels-per-mm <n>]
   root-measure wizard
   root-measure inspect --run <dir>
-  root-measure runs [--limit <n>]
+  root-measure runs [--limit <n>] [--path <input-or-results-dir>]
   root-measure compare --actual <features.csv> --expected <expected.csv> [--key File.Name]
   root-measure raw -- <rv.exe arguments>
   root-measure release-check
@@ -66,10 +66,14 @@ Usage:
 Examples:
   root-measure measure --input D:\data\scans --dpi 600 --preset broken-roots
   root-measure measure --input D:\data\whole-root --pixels-per-mm 13.27 --preset whole-root
-  root-measure inspect --run D:\root-measure\runs\root-measure-20260428
+  root-measure runs --path D:\data\scans --limit 10
+  root-measure inspect --run D:\data\scans\root-measure-results\root-measure-20260428
   root-measure raw -- -r -v -na --segment --feature --convert --factordpi 600 -op D:\out -o features.csv D:\images
 
 Notes:
+  By default, toolchain files resolve inside the installed plugin repository or an explicit backend override.
+  By default, measurement output is written next to the input path under root-measure-results\root-measure-<timestamp>.
+  Use --root-measure-root or ROOT_MEASURE_ROOT only for advanced custom layouts.
   User data usually does not have an expected CSV. Use compare only when you explicitly have a public, official, or previous expected table.
   The raw command preserves the full installed rv.exe CLI. Everything after "raw --" is forwarded unchanged.
 '@
@@ -256,6 +260,10 @@ function Invoke-Runs {
   $parsed = Convert-ArgsToOptions $CliArgs
   $limit = Get-Option $parsed.options @('limit', 'n') 10
   $scriptArgs = @('-Limit', [string]$limit)
+  $searchPath = Get-Option $parsed.options @('path', 'input', 'search-path')
+  if ($searchPath) {
+    $scriptArgs += @('-SearchPath', [string]$searchPath)
+  }
   $root = Get-Option $parsed.options @('root-measure-root')
   if ($root) {
     $scriptArgs += @('-RootMeasureRoot', [string]$root)
@@ -364,14 +372,42 @@ function Invoke-ReleaseCheck {
 
 function Invoke-Raw {
   param([string[]]$CliArgs)
-  $rvArgs = @($CliArgs)
-  if ($rvArgs.Count -gt 0 -and $rvArgs[0] -eq '--') {
-    $rvArgs = @($rvArgs | Select-Object -Skip 1)
+  $rvArgs = New-Object System.Collections.Generic.List[string]
+  $rootOverride = ''
+  for ($i = 0; $i -lt $CliArgs.Count; $i++) {
+    $arg = [string]$CliArgs[$i]
+    if ($arg -eq '--root-measure-root') {
+      if (($i + 1) -ge $CliArgs.Count) {
+        Fail-Usage 'raw requires a value after --root-measure-root.'
+      }
+      $i += 1
+      $rootOverride = [string]$CliArgs[$i]
+      continue
+    }
+    [void]$rvArgs.Add($arg)
   }
-  if ($rvArgs.Count -eq 0) {
+
+  $rawArgs = @($rvArgs.ToArray())
+  if ($rawArgs.Count -gt 0 -and $rawArgs[0] -eq '--') {
+    $rawArgs = @($rawArgs | Select-Object -Skip 1)
+  }
+  if ($rawArgs.Count -eq 0) {
     Fail-Usage 'raw requires rv.exe arguments, usually after "raw --".'
   }
-  Invoke-PluginScript 'invoke-rv.ps1' $rvArgs
+
+  $oldRoot = $env:ROOT_MEASURE_ROOT
+  try {
+    if (-not [string]::IsNullOrWhiteSpace($rootOverride)) {
+      $env:ROOT_MEASURE_ROOT = $rootOverride
+    }
+    Invoke-PluginScript 'invoke-rv.ps1' $rawArgs
+  } finally {
+    if ([string]::IsNullOrWhiteSpace($oldRoot)) {
+      Remove-Item Env:\ROOT_MEASURE_ROOT -ErrorAction SilentlyContinue
+    } else {
+      $env:ROOT_MEASURE_ROOT = $oldRoot
+    }
+  }
 }
 
 $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Command)) { 'help' } else { $Command.ToLowerInvariant() }

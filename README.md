@@ -1,11 +1,11 @@
 # root-measure
 
-Root Measure 是一个面向 Codex 的根系图像测量插件。它把经过验证的
-RhizoVision Explorer CLI 工作流包装成可由 agent 调用、可安装检查、可复现、
-并且能保留完整运行证据的分析流程。
+`root-measure` is a Codex plugin for root image measurement built around the
+validated RhizoVision Explorer CLI workflow. It packages install checks,
+guided usage, transparent run artifacts, and reproducibility-oriented evidence
+into a single plugin and CLI.
 
-这个仓库包含 Codex 插件清单、Root Measure 技能、统一命令入口、安装诊断、
-用户文档和发布检查脚本。当前版本：`0.2.0-beta`。
+Current version: `0.2.0-beta`
 
 ![Root Measure product workflow](assets/root-measure-product-infographic.png)
 
@@ -19,91 +19,81 @@ RhizoVision Explorer CLI 工作流包装成可由 agent 调用、可安装检查
 
 ### 这是什么
 
-`root-measure` 面向这样一句话请求：
+`root-measure` 适合这样的请求：
 
 ```text
-Use Root Measure to analyze this folder of root images. The scan scale is 600 DPI.
+用 Root Measure 分析这个根系图像文件夹，扫描精度是 600 DPI。
 ```
 
-它保留 RhizoVision Explorer 的方法核心不变：
+它保留 RhizoVision Explorer 的科学测量核心，同时补上更适合 Codex
+工作流的外层能力：
 
-- RhizoVision Explorer CLI 仍然是测量引擎
-- Codex 插件负责安装发现、参数引导、运行证据整理和排错
-- 统一 CLI 让 agent 和高级用户都能稳定调用
-- `raw --` 模式保留完整 `rv.exe` 原始参数能力
+- 用统一 CLI 提供稳定入口
+- 用 `doctor` 和 `release-check` 做安装与发布校验
+- 用 `viewer.html`、`run_manifest.json`、日志和中间图像保留证据链
+- 用 `raw --` 保留完整 `rv.exe` 参数透传能力
 
 ### 能测什么
 
-Root Measure 会根据 RVE 输出生成 `features.csv`。实际列取决于图像类型、
-尺度和 CLI 参数，常见指标包括：
+Root Measure 读取 RVE 输出并生成 `features.csv`。常见指标包括：
 
-- 根长、表面积、投影面积和体积
-- 根尖数、分枝点数和分枝频率
-- 平均直径、中位直径和最大直径
+- 根长、表面积、投影面积、体积
+- 根尖数、分枝点数、分枝频率
+- 平均直径、中位直径、最大直径
 - 按直径范围分箱的长度、面积、表面积和体积
 - 运行诊断信息，例如文件名、ROI 和计算耗时
 
-注意：`Computation.Time.s` 是运行耗时，不是生物学性状。解释 mm、mm2、
-mm3 等物理单位前，必须提供正确的 `DPI` 或 `pixels/mm`。
+注意：`Computation.Time.s` 是运行时间，不是生物学性状。只有在
+`DPI` 或 `pixels/mm` 正确时，`mm`、`mm2`、`mm3` 才能按真实物理单位解释。
 
-### 两种常用分析模式
+### 常见分析模式
 
-- `Broken-root mode`
-  - 用于洗净后铺开的断根、根段或散根扫描图
-  - 适合高对比度白底扫描图
-  - 重点输出长度、直径、面积、体积和拓扑指标
-- `Crown mode`
-  - 用于完整根系、根冠或 seedling crown 图像
-  - 适合保留整体结构的样本
-  - 重点保留根系构型相关输出和可视化证据
+- `broken roots`
+  - 适合洗净后铺开的断根、根段或散根扫描图
+  - 更关注长度、直径、面积、体积和拓扑指标
+- `whole root / crown`
+  - 适合完整根系、根冠或 seedling crown 图像
+  - 更关注整体结构、形态和可视化证据
 
-如果高层 `measure` 命令还没有覆盖某个 RVE 参数，可以使用：
+如果高层 `measure` 命令没有暴露你需要的某个 RVE 参数，可以用：
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd raw -- <rv.exe arguments>
 ```
 
-### 给 Agent 用户
+### 面向 Codex 用户
 
-如果你平时就是对 Codex 说一句话来完成安装和分析，推荐这样使用。
+如果你通常是直接让 Codex 帮你安装和分析，推荐这样用。
 
-#### 最快路径：从 GitHub 安装插件
+#### 从 GitHub 安装并校验
 
-让 Codex 执行：
+告诉 Codex：
 
 ```text
 Install this Codex plugin and verify it with release-check:
 https://github.com/Rimagination/root-measure
 ```
 
-安装后请运行：
+安装后运行：
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd release-check
 ```
 
-通过时会看到 `status: pass`。
+通过时应看到 `status: pass`。
 
-安装是这个插件最技术化、也最容易踩坑的部分。如果 Codex Desktop 只弹出笼统的
-“插件安装失败”，请看 [docs/installation.md](docs/installation.md)。那里记录了
-local marketplace 目录、真实 Codex 插件缓存路径、严格 UTF-8 manifest，以及会导致
-`plugin.json` 看起来正常但 Codex 解析失败的 BOM 问题。
+如果 Codex Desktop 只弹出笼统的“plugin install failed”，请看
+[docs/installation.md](docs/installation.md)。
 
 #### 第一次分析自己的数据
 
 可以直接对 Codex 说：
 
 ```text
-Use Root Measure to analyze D:\data\scans. The scan scale is 600 DPI.
+用 Root Measure 分析 D:\data\scans，扫描精度是 600 DPI。
 ```
 
-或者：
-
-```text
-帮我用 Root Measure 分析 D:\data\scans，扫描尺度是 600 DPI。
-```
-
-如果不确定参数：
+如果你不确定该怎么选模式或参数：
 
 ```text
 Start the Root Measure guided workflow.
@@ -117,64 +107,72 @@ Start the Root Measure guided workflow.
 <plugin-root>\bin\root-measure.cmd measure --input D:\data\roots --pixels-per-mm 13.27 --preset whole-root
 ```
 
-分析自己的新数据时，通常没有 expected CSV。Root Measure 默认做测量和质控：
-图像数量、尺度、真实命令参数、结果行数、viewer、中间图和日志。
-
 ### 输出内容
 
-每次高层分析都会生成一个结果目录，通常位于 Root Measure 后端项目的 `runs`
-目录。重要文件包括：
+每次高层分析都会生成一个结果目录。默认情况下，结果会写到输入路径旁边的：
+
+```text
+root-measure-results\root-measure-<timestamp>
+```
+
+常见产物包括：
 
 - `features.csv`：测量结果表
 - `viewer.html`：本地结果查看页
 - `viewer-data.json`：viewer 使用的数据
 - `run_manifest.json`：输入、参数、工具 hash 和产物记录
 - `rv.stdout.txt`、`rv.stderr.txt`、`rv.log`：运行日志
-- segmentation 和 feature overlay 图像
+- segmentation 与 feature overlay 图像
 
-常用检查命令：
+常用命令：
 
 ```powershell
-<plugin-root>\bin\root-measure.cmd runs --limit 10
+<plugin-root>\bin\root-measure.cmd runs --path D:\data\scans --limit 10
 <plugin-root>\bin\root-measure.cmd inspect --run <run-folder>
 <plugin-root>\bin\root-measure.cmd doctor
 ```
 
 ### 公开数据复现
 
-只有在你有 expected CSV 或历史 baseline 时，才进入复现/对比流程。Root Measure
-可以把生成的 `features.csv` 和 expected 结果对比，并报告 exact 或差异。
+只有在你手头已经有 `expected CSV` 或历史 baseline 时，才进入复现对比流程。
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name
 ```
 
-如果 expected 表里有重复的 `File.Name`：
+如果 expected 表里 `File.Name` 有重复：
 
 ```powershell
 <plugin-root>\bin\root-measure.cmd compare --actual <features.csv> --expected <expected.csv> --key File.Name --duplicate-key-mode BestMatch
 ```
 
-GitHub `imageexamples` 适合 smoke test，不是数值标准答案。只有 `compare` 真正对比过
-expected CSV 后，才应声明“和官方结果一致”。
+GitHub `imageexamples` 更适合 smoke test，不应直接当作官方数值标准答案。
 
 更多说明见 [docs/reproducibility.md](docs/reproducibility.md)。
 
 ### 文档
 
-- [docs/installation.md](docs/installation.md)：Codex 安装与常见安装坑
+- [docs/installation.md](docs/installation.md)：安装与常见安装坑
 - [docs/usage.md](docs/usage.md)：日常分析流程
-- [docs/reproducibility.md](docs/reproducibility.md)：expected CSV 对比与公开数据复现
+- [docs/reproducibility.md](docs/reproducibility.md)：公开数据复现与对比
 - [docs/reproducibility-gotchas.md](docs/reproducibility-gotchas.md)：详细验证踩坑记录
+
+### 教程站点
+
+更完整的 GitHub Pages 教程、参数说明与复现记录见：
+
+- [https://rimagination.github.io/root-measure/](https://rimagination.github.io/root-measure/)
 
 ### 参考资料
 
-- RhizoVision Explorer：https://www.rhizovision.com/
-- RhizoVision Explorer GitHub：https://github.com/predictivephenomics/RhizoVisionExplorer
+- RhizoVision Explorer: [https://www.rhizovision.com/](https://www.rhizovision.com/)
+- RhizoVision Explorer GitHub:
+  [https://github.com/predictivephenomics/RhizoVisionExplorer](https://github.com/predictivephenomics/RhizoVisionExplorer)
 - Seethepalli, A. et al. (2021). RhizoVision Explorer: open-source software for
   root image analysis and measurement standardization. AoB PLANTS, 13(6), plab056.
-  https://doi.org/10.1093/aobpla/plab056
-- RhizoVision Explorer Zenodo release：https://doi.org/10.5281/zenodo.3747697
+  [https://doi.org/10.1093/aobpla/plab056](https://doi.org/10.1093/aobpla/plab056)
+- RhizoVision Explorer Zenodo release:
+  [https://doi.org/10.5281/zenodo.3747697](https://doi.org/10.5281/zenodo.3747697)
 
 ---
 
@@ -186,7 +184,7 @@ expected CSV 后，才应声明“和官方结果一致”。
 
 ### Overview
 
-`root-measure` is built for a request like:
+`root-measure` is built for requests like:
 
 ```text
 Use Root Measure to analyze this folder of root images. The scan scale is 600 DPI.
@@ -212,15 +210,15 @@ on image type, scale, and CLI parameters. Common outputs include:
 - run diagnostics such as file name, ROI, and computation time
 
 Note: `Computation.Time.s` is runtime, not a biological trait. Provide correct
-`DPI` or `pixels/mm` before interpreting mm, mm2, or mm3 as physical units.
+`DPI` or `pixels/mm` before interpreting `mm`, `mm2`, or `mm3` as physical units.
 
 ### Common Analysis Modes
 
-- `Broken-root mode`
+- `broken roots`
   - for washed, separated broken roots or root fragments on scans
   - best for high-contrast white-background scanner images
   - focuses on length, diameter, area, volume, and topology traits
-- `Crown mode`
+- `whole root / crown`
   - for intact root systems, crowns, or seedling crown images
   - best when the whole architecture should stay visible
   - keeps architecture-oriented outputs and visual evidence
@@ -287,8 +285,9 @@ output rows, generated viewer, intermediate images, and logs.
 
 ### Outputs
 
-Each high-level run writes a run folder, usually under the Root Measure backend
-project's `runs` directory. Important files include:
+Each high-level run writes a run folder. By default, Codex places it next to
+the input path under `root-measure-results\root-measure-<timestamp>`. Important
+files include:
 
 - `features.csv`: measurement table
 - `viewer.html`: local review page
@@ -300,7 +299,7 @@ project's `runs` directory. Important files include:
 Useful commands:
 
 ```powershell
-<plugin-root>\bin\root-measure.cmd runs --limit 10
+<plugin-root>\bin\root-measure.cmd runs --path D:\data\scans --limit 10
 <plugin-root>\bin\root-measure.cmd inspect --run <run-folder>
 <plugin-root>\bin\root-measure.cmd doctor
 ```
@@ -337,12 +336,20 @@ More details: [docs/reproducibility.md](docs/reproducibility.md).
 - [docs/reproducibility-gotchas.md](docs/reproducibility-gotchas.md): detailed
   validation pitfalls
 
+### Full Tutorial
+
+For the longer GitHub Pages tutorial with step-by-step usage notes, parameter
+guidance, and reproducibility records, visit:
+
+- [https://rimagination.github.io/root-measure/](https://rimagination.github.io/root-measure/)
+
 ### References
 
-- RhizoVision Explorer: https://www.rhizovision.com/
+- RhizoVision Explorer: [https://www.rhizovision.com/](https://www.rhizovision.com/)
 - RhizoVision Explorer GitHub:
-  https://github.com/predictivephenomics/RhizoVisionExplorer
+  [https://github.com/predictivephenomics/RhizoVisionExplorer](https://github.com/predictivephenomics/RhizoVisionExplorer)
 - Seethepalli, A. et al. (2021). RhizoVision Explorer: open-source software for
   root image analysis and measurement standardization. AoB PLANTS, 13(6), plab056.
-  https://doi.org/10.1093/aobpla/plab056
-- RhizoVision Explorer Zenodo release: https://doi.org/10.5281/zenodo.3747697
+  [https://doi.org/10.1093/aobpla/plab056](https://doi.org/10.1093/aobpla/plab056)
+- RhizoVision Explorer Zenodo release:
+  [https://doi.org/10.5281/zenodo.3747697](https://doi.org/10.5281/zenodo.3747697)

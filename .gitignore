@@ -9,3 +9,9 @@ runs/
 *.zip
 *.bundle
 
+# GitHub Pages / Jekyll build outputs
+_site/
+.jekyll-cache/
+.sass-cache/
+docs/superpowers/
+

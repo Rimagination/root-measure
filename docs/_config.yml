@@ -1,0 +1,7 @@
+title: Root Measure Tutorial
+description: Root Measure 使用说明、参数指南与复现验证记录
+theme: minima
+lang: zh-CN
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag

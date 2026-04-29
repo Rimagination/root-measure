@@ -1,0 +1,163 @@
+{
+  "name": "root-measure-rve-private-toolchain",
+  "created_at": "2026-04-27",
+  "entrypoint": "rv.exe",
+  "wrapper": "..\\..\\scripts\\Invoke-Rv.ps1",
+  "rv": {
+    "version_output": "RhizoVision Explorer CLI Version 2.5.0 Beta",
+    "sha256": "666021070EC31B6599086D35CB8E6EACB7416B85A2CBAA032BCFBDCAB90080D4",
+    "size_bytes": 969728,
+    "compatibility_mode": "official_v2.0.2_histogram_total_length_plus_cli_dranges_keeplargest_default_and_analytic_orientation_pca_fixes",
+    "pre_analytic_orientation_binary_backup": {
+      "path": "rv.pre-analytic-orientation.exe",
+      "sha256": "AF31879C8AB41D747DE954EBB80D0D809F1B76FFE7186C6F7B38B88A525FA524",
+      "size_bytes": 970240
+    },
+    "pre_keeplargest_default_fix_binary_backup": {
+      "path": "rv.pre-keeplargest-default-fix.exe",
+      "sha256": "B01BA0AC372A0AB1C7DFD41FC60AFEB1C475A6C44C3F7716D305208C1E70F471",
+      "size_bytes": 970240
+    },
+    "pre_dranges_fix_binary_backup": {
+      "path": "rv.pre-dranges-fix.exe",
+      "sha256": "C17EA0A2076C1DB6A85E06D70A6D7F25AD10A088A13C4D374F0AE9D4F1842A13",
+      "size_bytes": 970240
+    },
+    "upstream_length_binary_backup": {
+      "path": "rv-2.5.0-beta-upstream-length.exe",
+      "sha256": "735F5C6A4295CC513D71053E707D7BE042F412CA70781371A4C256C54EAACFAB",
+      "size_bytes": 970240
+    }
+  },
+  "cvutil": {
+    "installed_path": "cvutil.dll",
+    "sha256": "AB6E1BEAAD64DDC02FCA9CF1952F7B5A526FEE702B33E4A2BACCAD30086AA39B",
+    "compatibility_mode": "current_cvutil_abi_with_official_v2.0.2_bwdist_bwskel_and_1px_skeleton_boundary",
+    "compat_binary_backup": {
+      "path": "cvutil-official-v202-compat.dll",
+      "sha256": "AB6E1BEAAD64DDC02FCA9CF1952F7B5A526FEE702B33E4A2BACCAD30086AA39B"
+    },
+    "upstream_2_5_0_boundary2_backup": {
+      "path": "cvutil-2.5.0-boundary2.dll",
+      "sha256": "4FECB8DFD036DC990EDFE33C6C897C7CE93D6B5475950F03082B567C060D71E8"
+    }
+  },
+  "sources": {
+    "rhizovision_explorer": "..\\sources\\RhizoVisionExplorer-main",
+    "cvutil": "..\\sources\\cvutil-official-v202-compat",
+    "cvutil_upstream_2_5_0": "..\\sources\\cvutil-main",
+    "cvutil_official_2_0_2": "..\\sources\\cvutil-2.0.2"
+  },
+  "local_patches": [
+    {
+      "path": "..\\sources\\RhizoVisionExplorer-main\\RhizoVisionExplorer\\RhizoVisionExplorer.rc",
+      "reason": "Replace upstream developer-machine absolute icon path with source-relative icons\\rveicon.ico."
+    },
+    {
+      "path": "..\\sources\\RhizoVisionExplorer-main\\RhizoVisionExplorer\\feature_extraction.cpp",
+      "patch_file": "..\\patches\\rve-2.5.0-beta-official-v202-length.patch",
+      "reason": "Disable the 2.5.0 Beta getrootlength_new() overwrite of rootlength so Total.Root.Length.mm preserves the histogram-derived length used by the official v2.0.2 copper-wire outputs."
+    },
+    {
+      "path": "..\\sources\\RhizoVisionExplorer-main\\RhizoVisionExplorer\\feature_extraction.cpp",
+      "patch_file": "..\\patches\\rve-2.5.0-beta-analytic-orientation-pca.patch",
+      "reason": "Replace whole-root local orientation cv::eigen axis extraction with closed-form 2D PCA angle calculation. This removes OpenCV-version-dependent perpendicular-axis choices and exactly reproduces the Zenodo 8083525 Explorer 2.0.3 whole-root angle columns."
+    },
+    {
+      "path": "..\\sources\\RhizoVisionExplorer-main\\RhizoVisionExplorer\\rv.cpp",
+      "reason": "Fix --dranges CLI parsing by appending validated diameter cutoffs to config.dranges. Without this, explicit diameter ranges are consumed but cleared, leaving only one diameter-bin output range."
+    },
+    {
+      "path": "..\\sources\\RhizoVisionExplorer-main\\RhizoVisionExplorer\\rv.cpp",
+      "reason": "Set the CLI keepLargest default to false so metadata rows with `Keep largest component, false` are faithfully represented when `-kl` is absent."
+    },
+    {
+      "path": "..\\sources\\cvutil-official-v202-compat\\cvutil\\cvutil_bwdist.cpp",
+      "reason": "Use the official cvutil 2.0.2 bwdist implementation with a C++17 std::thread compatibility fix using std::ref for cv::Mat references."
+    },
+    {
+      "path": "..\\sources\\cvutil-official-v202-compat\\cvutil\\cvutil_bwskel.cpp",
+      "reason": "Use the official cvutil 2.0.2 skeleton implementation; cvutil 2.5.0 skeleton changes caused small but reproducible topology/length differences on the multispecies official tables."
+    },
+    {
+      "path": "..\\sources\\cvutil-official-v202-compat\\cvutil\\cvutil_core.cpp",
+      "reason": "Keep the current cvutil ABI required by rv.exe, but restore the cvutil 2.0.2 one-pixel skeleton boundary when calling the 2.0.2 bwskel helper."
+    }
+  ],
+  "runtime": {
+    "dlls_copied_from": "..\\envs\\rve-build\\Library\\bin",
+    "toolchain_root_dll_count": 399,
+    "path_override_required": false
+  },
+  "validated_by": {
+    "baseline_script": "..\\..\\scripts\\Invoke-RootMeasureBaseline.ps1",
+    "report": "..\\..\\runs\\baseline-report.md",
+    "smoke_tests": [
+      {
+        "name": "official scan examples",
+        "input": "..\\..\\validation-data\\rhizovision-explorer-github-imageexamples\\scans",
+        "output": "..\\..\\runs\\rv-baseline-smoke-scan\\features.csv",
+        "expected_rows": 3
+      },
+      {
+        "name": "official crown examples",
+        "input": "..\\..\\validation-data\\rhizovision-explorer-github-imageexamples\\crowns",
+        "output": "..\\..\\runs\\rv-smoke-crown\\features.csv",
+        "expected_rows": 3
+      }
+    ],
+    "official_reproduction": {
+      "script": "..\\..\\scripts\\Compare-RvOfficialCopperWire.ps1",
+      "report": "..\\..\\runs\\rv-official-reproduction-copper-wire\\official-comparison-report.md",
+      "scope": "28 official copper-wire 600 dpi TIFF images at thresholds 191 and 222",
+      "exact_rows_all_compared_columns": {
+        "threshold_191": 28,
+        "threshold_222": 28
+      },
+      "max_abs_diff": 0,
+      "note": "The compatibility build exactly reproduces every compared official column in the local 600 dpi copper-wire validation subset. The 1200 dpi official rows are not checked because the downloaded local image ZIP contains only the 600 dpi TIFF images."
+    },
+    "official_multispecies_reproduction": {
+      "script": "..\\..\\scripts\\Compare-RvOfficialMultispecies.ps1",
+      "report": "..\\..\\runs\\rv-official-reproduction-multispecies\\official-multispecies-comparison-report.md",
+      "scope": "588 available multispecies root-scan images: 318 herbaceous, 100 maize, 70 trees, and 100 wheat",
+      "exact_unique_rows_all_compared_columns": {
+        "herbaceous": "318/318",
+        "maize": "90/90 plus 10/10 duplicate-file best matches",
+        "trees": "70/70",
+        "wheat": "100/100"
+      },
+      "diff_rows": 9070,
+      "nonzero_diff_rows": 0,
+      "max_abs_diff": 0,
+      "note": "The cvutil official-v202 compatibility DLL is required for exact multispecies reproduction. The upstream cvutil 2.5.0 boundary2 DLL produced 458 nonzero metric rows, mostly topology/skeleton-derived features."
+    },
+    "official_whole_root_phenology_validation": {
+      "script": "..\\..\\scripts\\Compare-RvZenodo8083525WholeRoot.ps1",
+      "report": "..\\..\\runs\\rv-zenodo-8083525-whole-root-validation\\report.md",
+      "scope": "Zenodo 8083525 Phenology CrownRoots Explorer 2.0.3 whole-root feature tables for 2023_02_06, 2023_03_13, and 2023_04_24",
+      "matched_rows": "100/100",
+      "exact_rows_all_compared_columns": {
+        "2023_02_06": "50/50",
+        "2023_03_13": "25/25",
+        "2023_04_24": "25/25"
+      },
+      "nonzero_diff_cells": 0,
+      "residual_metrics": [],
+      "feature_image_comparison": {
+        "script": "..\\..\\scripts\\Compare-RvZenodo8083525FeatureImages.ps1",
+        "summary": "..\\..\\runs\\rv-zenodo-8083525-whole-root-validation\\feature_image_comparison.json",
+        "pixel_equal": "100/100",
+        "note": "The public processed feature images and local --feature outputs have different PNG file hashes but identical decoded RGBA pixels."
+      },
+      "parameter_probe": {
+        "report": "..\\..\\runs\\rv-zenodo-8083525-param-probes\\2023_02_06\\report.md",
+        "scope": "Largest CrownRoots batch, 50 images from 2023_02_06",
+        "metadata_baseline_non_orientation_diff_cells": 0,
+        "note": "Threshold, keep-largest, background-noise, smoothing, and pruning variants all introduce broad non-orientation differences, so the public metadata workflow is strongly inferred."
+      },
+      "resolved_cause": "The previous residual was caused by OpenCV-version-dependent cv::eigen axis selection in the local whole-root PCA orientation step. Replacing that extraction with a closed-form 2D covariance PCA angle reproduces the Explorer 2.0.3 GUI-era output exactly for the public Zenodo 8083525 CrownRoots tables.",
+      "note": "This is Explorer-origin whole-root exact reproduction evidence for the public Zenodo 8083525 CrownRoots feature tables. The executable still reports 2.5.0 Beta because it is a private CLI compatibility build, not the official GUI binary."
+    }
+  }
+}

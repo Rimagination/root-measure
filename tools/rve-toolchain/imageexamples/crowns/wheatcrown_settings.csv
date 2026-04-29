@@ -1,0 +1,26 @@
+RhizoVision Explorer Version, 2.0.2
+Image Path, 
+Output Path, 
+Root type, Whole root
+Image Thresholding Level, 200
+Invert images, false
+Keep largest component, true
+Filter noisy components on background, false
+Maximum background noisy component size, 0
+Filter noisy components on foreground, false
+Maximum foreground noisy component size, 0
+Enable edge smoothing, false
+Edge smoothing threshold, 2
+Enable root pruning, true
+Root pruning threshold, 1
+Convert pixels to physical units, true
+Number of Pixels per mm, 13.64
+Pixel to millimeter conversion factor, 0.0733138
+Diameter Range 1, 0, 1
+Diameter Range 2, 1, 2
+Diameter Range 3, 2, above
+Features output file name, featurres.csv
+Save segmented images, true
+Segmented image file name suffix, _segr
+Save processed feature images, true
+Processed image file name suffix, _featuresr

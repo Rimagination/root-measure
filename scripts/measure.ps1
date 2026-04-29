@@ -67,7 +67,8 @@ $root = & (Join-Path $PSScriptRoot 'Resolve-RootMeasureRoot.ps1') -RootMeasureRo
 
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
   $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-  $OutputRoot = Join-Path $root "runs\root-measure-$stamp"
+  $resolvedOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Resolve-DefaultOutputRoot.ps1') -InputPath $InputPath -RunName "root-measure-$stamp" | ConvertFrom-Json
+  $OutputRoot = $resolvedOutput.output_root
 }
 
 $script = Join-Path $root 'scripts\Invoke-RootMeasure.ps1'

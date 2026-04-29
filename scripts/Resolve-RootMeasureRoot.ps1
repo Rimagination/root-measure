@@ -23,30 +23,5 @@ if (-not [string]::IsNullOrWhiteSpace($env:ROOT_MEASURE_ROOT)) {
 }
 
 $pluginRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$searchRoots = New-Object System.Collections.Generic.List[string]
-$current = [System.IO.DirectoryInfo]::new($pluginRoot)
-while ($null -ne $current) {
-  $searchRoots.Add($current.FullName) | Out-Null
-  $current = $current.Parent
-}
-
-foreach ($root in $searchRoots) {
-  $candidate = Join-Path $root 'root-measure'
-  if (Test-Path -LiteralPath (Join-Path $candidate 'scripts\Invoke-RootMeasure.ps1')) {
-    (Resolve-Path -LiteralPath $candidate).Path
-    return
-  }
-}
-
-foreach ($root in $searchRoots) {
-  $matches = @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue | Where-Object {
-      Test-Path -LiteralPath (Join-Path $_.FullName 'scripts\Invoke-RootMeasure.ps1')
-    } | Select-Object -First 1)
-  if ($matches.Count -gt 0) {
-    $matches[0].FullName
-    return
-  }
-}
-
-throw "Could not locate Root Measure project from plugin root: $pluginRoot"
+(Resolve-Path -LiteralPath $pluginRoot).Path
 
